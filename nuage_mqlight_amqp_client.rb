@@ -25,11 +25,11 @@ class NuageMqLightClient
     @topics = topics
     @opts = opts
 
-    opts[:id] = "ID"
-    opts[:user] = "USER"
-    opts[:password] = "PASS"
-    opts[:port]     = 5672
-    opts[:timeout]  = 10
+    opts[:id] = ENV['NUAGE_ID']
+    opts[:user] = ENV['NUAGE_USER']
+    opts[:password] = ENV['NUAGE_PASSWORD']
+    # opts[:port]     = 5672
+    # opts[:timeout]  = 10
 
     puts "INIT opts: #{opts}"
 

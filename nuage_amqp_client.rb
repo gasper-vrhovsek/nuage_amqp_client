@@ -22,11 +22,12 @@ require 'optparse'
 
 class NuageMB < Qpid::Proton::Handler::MessagingHandler
 
-  def initialize(topics, opts)
+  def initialize(topics, opts, event_queue)
     super()
     @topics = topics
     @opts = opts
     @test_connection = @opts.delete(:test_connection)
+    @event_queue = event_queue
   end
 
   def on_start(event)
@@ -50,7 +51,9 @@ class NuageMB < Qpid::Proton::Handler::MessagingHandler
   end
 
   def on_message(event)
-    puts event.message.body
+    puts "EVENT received"
+    # puts event.message.body
+    @event_queue.push(event)
   end
 
   def on_transport_error(event)
@@ -66,13 +69,27 @@ options = {
   :test_connection           => false,
   :urls                      => urls}
 
+@event_queue = Queue.new
+
+Thread.new do
+  loop do
+    puts "Thread iter, #{@event_queue.size}"
+
+    puts "#{@event_queue.pop}" if @event_queue.size > 0
+
+    # sleep 2
+  end
+end
+
+
+
 loop do
   begin
-    hw = NuageMB.new(["topic/CNAMessages", "topic/CNAAlarms"], options)
+    hw = NuageMB.new(["topic/CNAMessages", "topic/CNAAlarms"], options, @event_queue)
     Qpid::Proton::Reactor::Container.new(hw).run
   rescue => e
     puts "Caught exception #{e}"
   end
 
-  sleep 2
+  # sleep 2
 end
